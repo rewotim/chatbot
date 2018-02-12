@@ -1,18 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-# PA6, CS124, Stanford, Winter 2016
-# v.1.0.2
-#
-# Original Python code by Ignacio Cases (@cases)
-# Ported to Java by Raghav Gupta (@rgupta93) and Jennifer Lu (@jenylu)
-#
-# Refs
-# https://docs.python.org/3/library/cmd.html
-# https://pymotw.com/2/cmd/
-#
-######################################################################
-
 import cmd
 import argparse
 from chatbot import *
@@ -101,15 +86,12 @@ class REPL(cmd.Cmd):
         print 'disabling debug...'
         self.debug_chatbot = False
 
-      # Debugging the chatbot
       if self.debug_chatbot == True:
         print self.chatbot.debug(line)
 
       return cmd.Cmd.postcmd(self, stop, line)
 
-    def secret(self, line):
-      story = """A long time ago, in a remote land, a young developer named Alberto Caso managed to build an ingenious and mysterious chatbot... Now it's your turn!"""
-      print story
+    
 
     def do_prompt(self, line):
       "Change the interactive prompt"
@@ -152,5 +134,5 @@ def process_command_line():
 if __name__ == '__main__':
   args = process_command_line()
   repl = REPL()
-  repl.set_turbo(args.is_turbo) # sigh, this is hacky -- we should be able to pass it directly to the constructor or initialization method, but there is an inheritance issue
+  repl.set_turbo(args.is_turbo) 
   repl.cmdloop()
