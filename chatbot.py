@@ -1,11 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-# PA6, CS124, Stanford, Winter 2016
-# v.1.0.2
-# Original Python code by Ignacio Cases (@cases)
-# Ported to Java by Raghav Gupta (@rgupta93) and Jennifer Lu (@jenylu)
-######################################################################
 import csv
 import math
 import re
@@ -20,18 +12,6 @@ from random import randint
 
 class Chatbot:
     """Simple class to implement the chatbot for PA 6."""
-    #def ask_for_movie_clarify:
-    #   if 'ace ventura', ask did u mean...
-
-    #def spell-check:
-    #   input: wrong
-    #   creative.
-    #   return correct one
-
-    #def recommend_terminator
-    #   creative
-    #   with whatever user says, give convincing reason
-    #   why user should watch terminator
 
     def __init__(self, is_turbo=False):
       self.name = 'moviebot'
@@ -41,7 +21,7 @@ class Chatbot:
       self.movieDB = {}
       self.alphanum = re.compile('[^a-zA-Z0-9]')
       self.numOfGoodReplys = 0
-      self.userRatings = [] #list of Ratings from the user. Elements are lists in the form: [movieTitle, rating, index in self.titles]
+      self.userRatings = []
       self.numOfReviewsUntilReady = 5
       self.mostRecent = ''
       self.agreeScore = 0
@@ -55,9 +35,6 @@ class Chatbot:
       self.read_data()
       self.runCount = 0
 
-    #############################################################################
-    # 1. WARM UP REPL
-    #############################################################################
 
     def greeting(self):
       """chatbot greeting message"""
@@ -78,22 +55,13 @@ class Chatbot:
 
       return goodbye_msgs[randint(0, len(goodbye_msgs) - 1)]
 
-    #checks the previous word and word two words back to see if it is a negation. Doesn't handle the
-    #the case if its a double negative like 'I didn't not like "titanic"' but I don't know if it really needs to
     def negatedWord(self, prevWord, wordTwoBack):
         if prevWord == 'not' or prevWord.endswith('nt') or prevWord == 'never':
             return True
         if wordTwoBack == 'not' or wordTwoBack.endswith('nt') or wordTwoBack == 'never':
             return True
         return False
-    #############################################################################
-    # 2. Modules 2 and 3: extraction and transformation                         #
-    #############################################################################
 
-    #given a sentence that has the movie extracted from it, this function returns 1 if the user liked it, -1 if he didn't
-    #like it, and 0 if its unknown.
-    #It just counts the number of pos and neg words. When checking a word, if the previous word is "not" or ends with "nt"
-    #the current word is the opposite of the sentiment lexicon
     def likedMovie(self, sentence):
         posWordCount = 0
         negWordCount = 0
@@ -101,14 +69,14 @@ class Chatbot:
         prevWord = ""
         wordTwoBack = ""
         for word in words:
-            word = word.lower() #using stem. It's shown how to use on IRSystem.py
+            word = word.lower() 
             word = word.strip()
             word = self.alphanum.sub('', word)
             if word != '':
                word = self.p.stem(word, 0, len(word)-1)
-               rating = self.stemmedSentiment.get(word) # returns None, if the key is not in the dict
+               rating = self.stemmedSentiment.get(word) 
                if rating == 'pos':
-                   # for creative, consider the case of double negatives
+           
                    if self.negatedWord(prevWord, wordTwoBack):
                        negWordCount += 1
                    else:
@@ -127,7 +95,6 @@ class Chatbot:
         else:
             return -1
 
-    #When it has a multiple of 5 reviews from the user, it returns true
     def timeForRec(self):
       if self.numOfGoodReplys != 0:
           if (self.numOfGoodReplys % self.numOfReviewsUntilReady) == 0:
@@ -176,17 +143,15 @@ class Chatbot:
         1) extract the relevant information and
         2) transform the information into a response to the user
       """
-        # TODO: handle cases of mulitple movies
-
-
+      
       movie = ''
       restOfSentence = ''
       oppositeOfLast = False
       sameAsLast = False
-      inQuotePattern = '(.*?)\"(.*?)\"(.*)'  # captures the movie in quotes and everything else
+      inQuotePattern = '(.*?)\"(.*?)\"(.*)'  
       match = re.findall(inQuotePattern, input)
       reply = ''
-      if len(match) == 0:  # found no quotes
+      if len(match) == 0:  
         emotionProcessed = self.checkForEmotion(input)
         if emotionProcessed != '':
           reply += emotionProcessed
@@ -213,8 +178,7 @@ class Chatbot:
         if len(restOfSentenceList) == 1 and restOfSentenceList[0].lower() == 'and':
           sameAsLast = True
 
-        # TODO: search for movie title more robustly
-      movie_index = self.search_for_title_str(str.lower(movie))  # index of movie in self.titles
+      movie_index = self.search_for_title_str(str.lower(movie))  
       if movie_index == -1:
             # TODO different replies
           never_heard_messages = ["I've never heard of that movie. Please tell me about another movie.",
@@ -229,16 +193,8 @@ class Chatbot:
       movie = self.titles[movie_index][0]
       self.mostRecent = movie
 
-
-        # TODO
-        # If movie title has an article at the end move it to the front. EX: "The Last Supper (1995)"
-        # should be changed to "Last Supper, The (1995)" so that it can be found in the database.
-        # Weird cases to check for "Miserables, Les" maybe
-
-
       movieRating = self.likedMovie(restOfSentence)
 
-        # checks to see if the user typed something that refered to the sentiment of the last input
       if oppositeOfLast:
         movieRating = self.lastRating * -1
       elif sameAsLast:
@@ -247,9 +203,6 @@ class Chatbot:
 
       reply = ""
 
-        # TODO different replies
-
-        # finds all the indexes where this is true and puts them in a list
       moviesSeenIndex = [k for k, userRating in enumerate(self.userRatings) if userRating[0] == movie]
       if len(moviesSeenIndex) != 0:
         if movieRating == self.userRatings[moviesSeenIndex[0]][1]:
@@ -257,39 +210,36 @@ class Chatbot:
         else:
             reply += "You changed your opinion about %s! " % movie
         self.userRatings.pop(moviesSeenIndex[0])
-              #already_seen_msgs = ["You've already told me about %s. Please tell me about another movie." % movie,
-              #                 "Yup, I remember what you said about %s. Can you tell me about another movie?" % movie,
-              #                  "I think you've already told me about %s. What other movies have you seen?" % movie]
-          #return already_seen_msgs[randint(0, len(already_seen_msgs) - 1)]
+             
 
       botRating = self.movieDB[movie][1]
 
       if (movieRating == 1):
         if botRating == 1:
-            reply += 'Hey! I really liked that movie too! ' # this is just an example statement
+            reply += 'Hey! I really liked that movie too! ' 
             self.agreeScore += 1
         if botRating == -1:
-            reply += 'Hmm, not sure if I agree with your taste, but okay. ' # this is jusft an example statement
+            reply += 'Hmm, not sure if I agree with your taste, but okay. ' 
             self.agreeScore -= 1
         reply += "You liked " + movie + ". "
-        if botRating == 0: reply += 'I haven\'t watched it, but will try it since you liked it. :) ' # this is just an example statement
-        self.numOfGoodReplys += 1   #Counts the number of times the user inputs a valid review of a moivie
+        if botRating == 0: reply += 'I haven\'t watched it, but will try it since you liked it. :) ' 
+        self.numOfGoodReplys += 1   
         self.userRatings.append([movie, 1, movie_index])
       elif (movieRating == -1):
         if botRating == 1:
-            reply += 'Hmm, I think that one was alright, but okay. ' # this is jusft an example statement
+            reply += 'Hmm, I think that one was alright, but okay. '
             self.agreeScore -= 1
         reply += "You did not like " + movie + ". "
         if botRating == -1:
-            reply += 'Totally agree. Hated that one too. ' # this is just an example statement
+            reply += 'Totally agree. Hated that one too. ' 
             self.agreeScore += 1
-        if botRating == 0: reply += 'I haven\'t watched it, but will make sure to avoid it. ' # this is just an example statement
+        if botRating == 0: reply += 'I haven\'t watched it, but will make sure to avoid it. '
         self.numOfGoodReplys += 1
         self.userRatings.append([movie, -1, movie_index])
       else:
         return "I'm sorry, I'm not quite sure if you liked " + movie + ".\nTell me more clearly your opinion about " + movie + ""
 
-      if (self.timeForRec()): # when it has enough info to make a recommendation
+      if (self.timeForRec()): 
         reply += "That's enough for me to make a recommendation\n"
         recommendation = self.recommend([])
         if self.agreeScore > 2:
@@ -301,14 +251,12 @@ class Chatbot:
         else:
             reply += "I suggest you watch " + recommendation + "!"
         self.agreeScore = 0
-        # TODO: ask if user wants more recommendations or to say goodbye!
 
       reply += "\nTell me about another movie you have seen"
 
       return reply
 
     def rearrange_articles(self, title_str):
-        # case of single movie name (usually non-foreign language)
         single_article_pattern = r'(.*), ([A-Z][a-z]{0,2}) (\([0-9]{4}\))'
         single_article_matches = re.findall(single_article_pattern, title_str)
         if len(single_article_matches) > 0:
@@ -317,17 +265,17 @@ class Chatbot:
             year = single_article_matches[0][2]
             title_str = article + " " + name + " " + year
 
-        # case of name and alternate name in parentheses
+   
         first_name_article_pattern = r'(.*), ([A-Z][a-z]{0,2}) (\(.*\) \([0-9]{4}\))'
         first_name_article_matches = re.findall(first_name_article_pattern, title_str)
         if len(first_name_article_matches) > 0:
             name = first_name_article_matches[0][0]
             article = first_name_article_matches[0][1]
             rest_of_str = first_name_article_matches[0][2]
-            # move first article (if present)
+
             title_str = article + " " + name + " " + rest_of_str
 
-            # move second article (if present)
+           
             second_name_article_pattern = r'(.*\()(.*), ([A-Z][a-z\']{0,2})(\) \([0-9]{4}\))'
             second_name_article_matches = re.findall(second_name_article_pattern, title_str)
             if len(second_name_article_matches) > 0:
@@ -335,7 +283,6 @@ class Chatbot:
                 second_name = second_name_article_matches[0][1]
                 second_article = second_name_article_matches[0][2]
                 year = second_name_article_matches[0][3]
-                # case of articles like the Italian/French L' where there's no space before the word
                 if '\'' in second_article:
                     title_str = first_name + second_article + second_name + year
                 else:
@@ -345,16 +292,15 @@ class Chatbot:
 
     def search_for_title_str(self, search_str):
         matches = []
-        min_edit_dist = float('inf')  # arbitrary large number
+        min_edit_dist = float('inf')  
 
         for movie_index in xrange(0, len(self.titles)):
             movie = self.titles[movie_index]
-            # rearrange title to put articles in front
             title = str.lower(self.rearrange_articles(movie[0]))
             if search_str == title:
                 return movie_index
             else:
-                if search_str in title:  # check if search_str is a substring of title
+                if search_str in title:  
                     edit_dist = self.edit_distance(title, search_str)
                     if edit_dist < min_edit_dist:
                         matches = [movie_index] + matches
@@ -400,7 +346,6 @@ class Chatbot:
         distance_tbl = [[-1 for i in xrange(n + 1)] for j in xrange(m + 1)]
         distance_tbl[0][0] = 0
 
-        # init values for empty string_a/empty string_b
         for i in xrange(1, m + 1):
             distance_tbl[i][0] = distance_tbl[i - 1][0] + 1
         for j in xrange(1, n + 1):
@@ -415,19 +360,12 @@ class Chatbot:
 
         return distance_tbl[m][n]
 
-    #############################################################################
-    # 3. Movie Recommendation helper functions                                  #
-    #############################################################################
 
     def read_data(self):
       """Reads the ratings matrix from file"""
-      # This matrix has the following shape: num_movies x num_users
-      # The values stored in each row i and column j is the rating for
-      # movie i by user j
       self.titles, self.ratings = ratings()
       reader = csv.reader(open('data/sentiment.txt', 'rb'))
       self.sentiment = dict(reader)
-      #stem everything in the dictionary and put it in a new dictionary called stemmedSentiment
       for key in self.sentiment:
         newKey = key.lower()
         newKey = self.p.stem(newKey, 0, len(newKey)-1)
@@ -455,8 +393,6 @@ class Chatbot:
             if score != 0:
                 score -= mean
 
-    #makes everything in the matrix either 1, -1, or 0 depending on if the rating is > or < 2.5
-    #Currently takes like 10 seconds
     def binarize(self):
       """Modifies the ratings matrix to make all of the ratings binary"""
       self.ratings[np.where(self.ratings > 2.5)] = 10
@@ -481,11 +417,11 @@ class Chatbot:
       bestMovieTitle = ""
       max_score = -1
       for i in xrange(0, len(self.titles)):
-          movieIndex = [k for k, x in enumerate(self.userRatings) if x[0] == self.titles[i][0]] #so it doesn't go through a movie in your userRatings
+          movieIndex = [k for k, x in enumerate(self.userRatings) if x[0] == self.titles[i][0]] 
           if len(movieIndex) == 0:
               score = 0.0
               total_cossim = 0.0
-              for j in xrange(len(self.userRatings)): #self.ratings[i] len is around 600, titles is around 9000
+              for j in xrange(len(self.userRatings)): 
                   cossim = self.distance(self.ratings[self.userRatings[j][2]], self.ratings[i])
                   total_cossim += cossim
                   score += cossim * self.userRatings[j][1]
@@ -496,32 +432,17 @@ class Chatbot:
                   bestMovieTitle = self.titles[i][0]
       return bestMovieTitle
 
-    #############################################################################
-    # 4. Debug info                                                             #
-    #############################################################################
 
     def debug(self, input):
       """Returns debug information as a string for the input string from the REPL"""
-      # Pass the debug information that you may think is important for your
-      # evaluators
       debug_info = 'debug info'
       return debug_info
 
-
-    #############################################################################
-    # 5. Write a description for your chatbot here!                             #
-    #############################################################################
     def intro(self):
       return """
       Welcome to MovieBot 2000!
       """
 
-    #############################################################################
-    # Auxiliary methods for the chatbot.                                        #
-    #                                                                           #
-    # DO NOT CHANGE THE CODE BELOW!                                             #
-    #                                                                           #
-    #############################################################################
 
     def bot_name(self):
       return self.name
