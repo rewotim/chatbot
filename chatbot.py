@@ -362,7 +362,7 @@ class Chatbot:
 
 
     def read_data(self):
-      """Reads the ratings matrix from file"""
+      
       self.titles, self.ratings = ratings()
       reader = csv.reader(open('data/sentiment.txt', 'rb'))
       self.sentiment = dict(reader)
@@ -394,7 +394,6 @@ class Chatbot:
                 score -= mean
 
     def binarize(self):
-      """Modifies the ratings matrix to make all of the ratings binary"""
       self.ratings[np.where(self.ratings > 2.5)] = 10
       self.ratings[np.where(self.ratings == 0)] = 9
       self.ratings[np.where(self.ratings <= 2.5)] = -1
@@ -434,13 +433,13 @@ class Chatbot:
 
 
     def debug(self, input):
-      """Returns debug information as a string for the input string from the REPL"""
       debug_info = 'debug info'
       return debug_info
 
     def intro(self):
       return """
-      Welcome to MovieBot 2000!
+      Welcome to ChatBot!
+       - A movie recommending Bot...
       """
 
 
@@ -451,25 +450,14 @@ class Chatbot:
 if __name__ == '__main__':
     Chatbot()
 
-
-#all PorterStemmer stuff
 class PorterStemmer:
 
     def __init__(self):
-        """The main part of the stemming algorithm starts here.
-        b is a buffer holding a word to be stemmed. The letters are in b[k0],
-        b[k0+1] ... ending at b[k]. In fact k0 = 0 in this demo program. k is
-        readjusted downwards as the stemming progresses. Zero termination is
-        not in fact used in the algorithm.
 
-        Note that only lower case sequences are stemmed. Forcing to lower case
-        should be done before stem(...) is called.
-        """
-
-        self.b = ""  # buffer for word to be stemmed
+        self.b = ""  
         self.k = 0
         self.k0 = 0
-        self.j = 0   # j is a general offset into the string
+        self.j = 0   
 
     def cons(self, i):
         """cons(i) is TRUE <=> b[i] is a consonant."""
@@ -483,16 +471,6 @@ class PorterStemmer:
         return 1
 
     def m(self):
-        """m() measures the number of consonant sequences between k0 and j.
-        if c is a consonant sequence and v a vowel sequence, and <..>
-        indicates arbitrary presence,
-
-           <c><v>       gives 0
-           <c>vc<v>     gives 1
-           <c>vcvc<v>   gives 2
-           <c>vcvcvc<v> gives 3
-           ....
-        """
         n = 0
         i = self.k0
         while 1:
@@ -520,14 +498,12 @@ class PorterStemmer:
             i = i + 1
 
     def vowelinstem(self):
-        """vowelinstem() is TRUE <=> k0,...j contains a vowel"""
         for i in range(self.k0, self.j + 1):
             if not self.cons(i):
                 return 1
         return 0
 
     def doublec(self, j):
-        """doublec(j) is TRUE <=> j,(j-1) contain a double consonant."""
         if j < (self.k0 + 1):
             return 0
         if (self.b[j] != self.b[j-1]):
@@ -535,13 +511,6 @@ class PorterStemmer:
         return self.cons(j)
 
     def cvc(self, i):
-        """cvc(i) is TRUE <=> i-2,i-1,i has the form consonant - vowel - consonant
-        and also if the second c is not w,x or y. this is used when trying to
-        restore an e at the end of a short  e.g.
-
-           cav(e), lov(e), hop(e), crim(e), but
-           snow, box, tray.
-        """
         if i < (self.k0 + 2) or not self.cons(i) or self.cons(i-1) or not self.cons(i-2):
             return 0
         ch = self.b[i]
@@ -550,9 +519,8 @@ class PorterStemmer:
         return 1
 
     def ends(self, s):
-        """ends(s) is TRUE <=> k0,...k ends with the string s."""
         length = len(s)
-        if s[length - 1] != self.b[self.k]: # tiny speed-up
+        if s[length - 1] != self.b[self.k]:
             return 0
         if length > (self.k - self.k0 + 1):
             return 0
@@ -562,37 +530,15 @@ class PorterStemmer:
         return 1
 
     def setto(self, s):
-        """setto(s) sets (j+1),...k to the characters in the string s, readjusting k."""
         length = len(s)
         self.b = self.b[:self.j+1] + s + self.b[self.j+length+1:]
         self.k = self.j + length
 
     def r(self, s):
-        """r(s) is used further down."""
         if self.m() > 0:
             self.setto(s)
 
     def step1ab(self):
-        """step1ab() gets rid of plurals and -ed or -ing. e.g.
-
-           caresses  ->  caress
-           ponies    ->  poni
-           ties      ->  ti
-           caress    ->  caress
-           cats      ->  cat
-
-           feed      ->  feed
-           agreed    ->  agree
-           disabled  ->  disable
-
-           matting   ->  mat
-           mating    ->  mate
-           meeting   ->  meet
-           milling   ->  mill
-           messing   ->  mess
-
-           meetings  ->  meet
-        """
         if self.b[self.k] == 's':
             if self.ends("sses"):
                 self.k = self.k - 2
@@ -617,15 +563,10 @@ class PorterStemmer:
                 self.setto("e")
 
     def step1c(self):
-        """step1c() turns terminal y to i when there is another vowel in the stem."""
         if (self.ends("y") and self.vowelinstem()):
             self.b = self.b[:self.k] + 'i' + self.b[self.k+1:]
 
     def step2(self):
-        """step2() maps double suffices to single ones.
-        so -ization ( = -ize plus -ation) maps to -ize etc. note that the
-        string before the suffix must give m() > 0.
-        """
         if self.b[self.k - 1] == 'a':
             if self.ends("ational"):   self.r("ate")
             elif self.ends("tional"):  self.r("tion")
@@ -635,9 +576,7 @@ class PorterStemmer:
         elif self.b[self.k - 1] == 'e':
             if self.ends("izer"):      self.r("ize")
         elif self.b[self.k - 1] == 'l':
-            if self.ends("bli"):       self.r("ble") # --DEPARTURE--
-            # To match the published algorithm, replace this phrase with
-            #   if self.ends("abli"):      self.r("able")
+            if self.ends("bli"):       self.r("ble") 
             elif self.ends("alli"):    self.r("al")
             elif self.ends("entli"):   self.r("ent")
             elif self.ends("eli"):     self.r("e")
@@ -655,12 +594,12 @@ class PorterStemmer:
             if self.ends("aliti"):     self.r("al")
             elif self.ends("iviti"):   self.r("ive")
             elif self.ends("biliti"):  self.r("ble")
-        elif self.b[self.k - 1] == 'g': # --DEPARTURE--
+        elif self.b[self.k - 1] == 'g': 
             if self.ends("logi"):      self.r("log")
-        # To match the published algorithm, delete this phrase
+        
 
     def step3(self):
-        """step3() dels with -ic-, -full, -ness etc. similar strategy to step2."""
+       
         if self.b[self.k] == 'e':
             if self.ends("icate"):     self.r("ic")
             elif self.ends("ative"):   self.r("")
@@ -737,25 +676,13 @@ class PorterStemmer:
             self.k = self.k -1
 
     def stem(self, p, i, j):
-        """In stem(p,i,j), p is a char pointer, and the string to be stemmed
-        is from p[i] to p[j] inclusive. Typically i is zero and j is the
-        offset to the last character of a string, (p[j+1] == '\0'). The
-        stemmer adjusts the characters p[i] ... p[j] and returns the new
-        end-point of the string, k. Stemming never increases word length, so
-        i <= k <= j. To turn the stemmer into a module, declare 'stem' as
-        extern, and delete the remainder of this file.
-        """
-        # copy the parameters into statics
+        
         self.b = p
         self.k = j
         self.k0 = i
         if self.k <= self.k0 + 1:
-            return self.b # --DEPARTURE--
+            return self.b 
 
-        # With this line, strings of length 1 or 2 don't go through the
-        # stemming process, although no mention is made of this in the
-        # published algorithm. Remove the line to match the published
-        # algorithm.
 
         self.step1ab()
         self.step1c()
