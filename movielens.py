@@ -1,10 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-# PA 6, CS124, Stanford, Winter 2016
-# v.1.0.2
-######################################################################
-
 import csv
 import numpy as np
 
